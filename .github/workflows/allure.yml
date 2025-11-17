@@ -1,0 +1,59 @@
+name: webdriverIO-tests
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: allure
+    env:
+      USERNAME: ${{ secrets.LOGIN_USERNAME }}
+      PASSWORD: ${{ secrets.LOGIN_PASSWORD }}
+        
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+          
+      - name: Install dependencies
+        run: |
+          npm install
+            
+      - name: Run all tests
+        run: npm run wdio
+          
+      - name: Get Allure history
+        uses: actions/checkout@v4
+        if: always()
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      # - name: List contents of gh-pages directory
+      #   run: ls -R gh-pages
+
+      # - name: List contents out of gh-pages directory
+      #   run: ls -R
+
+      - name: Allure Report action from marketplace
+        uses: simple-elf/allure-report-action@master
+        if: always()
+        with:
+          allure_results: allure-results
+          allure_history: allure-history
+          keep_reports: 10
+
+      # - name: List all content after Allure Report action
+      #   run: ls -R
+  
+      - name: Deploy report to Github Pages
+        uses: peaceiris/actions-gh-pages@v4
+        if: always()
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history
