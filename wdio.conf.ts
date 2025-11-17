@@ -1,81 +1,96 @@
-import type { Options } from '@wdio/types'
-const allure = require('allure-commandline')
-import * as fs from "fs"
-require('dotenv').config()
+import type { Options } from "@wdio/types";
+const allure = require("allure-commandline");
+import * as fs from "fs";
+require("dotenv").config();
 
 export const config: Options.Testrunner = {
-    runner: 'local',
+  runner: "local",
 
-    autoCompileOpts: {
-        autoCompile: true,
-        tsNodeOpts: {
-            project: './tsconfig.json',
-            transpileOnly: true
-        }
+  autoCompileOpts: {
+    autoCompile: true,
+    tsNodeOpts: {
+      project: "./tsconfig.json",
+      transpileOnly: true,
     },
+  },
 
-    specs: [
-        './tests/login/**/*.ts'
-    ],
+  specs: ["./tests/login/**/*.ts"],
 
-    exclude: [
-        // 'path/to/excluded/files'
-    ],
+  exclude: [
+    // 'path/to/excluded/files'
+  ],
 
-    capabilities: [{
-        browserName: 'chrome',
-        'goog:chromeOptions': {
-            args: ['--window-size=1280,720', '--no-sandbox', '--headless', 'disable-infobars', 'disable-popup-blocking', 'disable-notifications']
-        }
-    }],
+  capabilities: [
+    {
+      browserName: "chrome",
+      "goog:chromeOptions": {
+        args: [
+          "--window-size=1280,720",
+          "--no-sandbox",
+          "--headless",
+          "disable-infobars",
+          "disable-popup-blocking",
+          "disable-notifications",
+        ],
+      },
+    },
+  ],
 
-    logLevel: 'info',
+  logLevel: "info",
 
-    bail: 0,
+  bail: 0,
 
-    baseUrl: 'https://dev.mycavago.com/',
+  baseUrl: "https://google.com/",
 
-    waitforTimeout: 30000,
+  waitforTimeout: 3000,
 
-    connectionRetryTimeout: 120000,
+  connectionRetryTimeout: 1200,
 
-    services: ['chromedriver'],
+  services: ["chromedriver"],
 
-    framework: 'mocha',
+  framework: "mocha",
 
-    reporters: ['spec', ['allure', {
-        outputDir: 'allure-results',
+  reporters: [
+    "spec",
+    [
+      "allure",
+      {
+        outputDir: "allure-results",
         disableWebdriverStepsReporting: true,
         disableWebdriverScreenshotsReporting: false,
-    }]],
+      },
+    ],
+  ],
 
-    mochaOpts: {
-        ui: 'bdd',
-        timeout: 120000
-    },
+  mochaOpts: {
+    ui: "bdd",
+    timeout: 1200,
+  },
 
-    onComplete: function() {
-        const reportError = new Error('Could not generate Allure report')
-        const generation = allure(['generate', 'allure-results', '--clean'])
-        return new Promise<void>((resolve, reject) => {
-            const generationTimeout = setTimeout(
-                () => reject(reportError),
-                5000)
+  onComplete: function () {
+    const reportError = new Error("Could not generate Allure report");
+    const generation = allure(["generate", "allure-results", "--clean"]);
+    return new Promise<void>((resolve, reject) => {
+      const generationTimeout = setTimeout(() => reject(reportError), 5000);
 
-            generation.on('exit', function(exitCode) {
-                clearTimeout(generationTimeout)
+      generation.on("exit", function (exitCode) {
+        clearTimeout(generationTimeout);
 
-                if (exitCode !== 0) {
-                    return reject(reportError)
-                }
-                resolve()
-            })
-        })
-    },
-
-    afterTest: async function(test, context, { error, result, duration, passed, retries }) {
-        if (error) {
-            await browser.takeScreenshot();
+        if (exitCode !== 0) {
+          return reject(reportError);
         }
+        resolve();
+      });
+    });
+  },
+
+  afterTest: async function (
+    test,
+    context,
+    { error, result, duration, passed, retries }
+  ) {
+    if (error) {
+      await browser.takeScreenshot();
     }
-}
+  },
+};
